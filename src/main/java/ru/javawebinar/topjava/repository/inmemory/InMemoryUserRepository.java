@@ -10,15 +10,15 @@ import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
     private static final Logger log = LoggerFactory.getLogger(InMemoryUserRepository.class);
 
-     private static Map<Integer, User> repository = new ConcurrentHashMap<>();
+    private static Map<Integer, User> repository = new ConcurrentHashMap<>();
 
-
-
+    private final AtomicInteger counter = new AtomicInteger(0);
 
 
     @Override
@@ -32,10 +32,14 @@ public class InMemoryUserRepository implements UserRepository {
     public User save(User user) {
         log.info("save {}", user);
 
+        if (user.isNew()) {
+            user.setId(counter.incrementAndGet());
+            repository.put(user.getId(), user);
 
-        repository.put(user.getId(), user);
+            return user;
+        }
 
-        return user;
+        return repository.computeIfPresent(user.getId(), (a, b) -> user);
     }
 
     @Override
@@ -47,10 +51,12 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Collection<User> getAll() {
+    public List<User> getAll() {
         log.info("getAll");
 
-        return repository.values();
+        return repository.values().stream().sorted(Comparator.comparing(User::getName)
+                        .thenComparing(User::getEmail))
+                        .toList();
     }
 
     @Override
@@ -58,8 +64,7 @@ public class InMemoryUserRepository implements UserRepository {
         log.info("getByEmail {}", email);
 
 
-
-        return repository.values().stream().filter(u->u.getEmail().equals(email)).findFirst().orElse(null);
+        return repository.values().stream().filter(u -> u.getEmail().equals(email)).findFirst().orElse(null);
 
 
     }
