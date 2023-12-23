@@ -4,8 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
+import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.ValidationUtil;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
@@ -23,21 +26,21 @@ public class MealService {
 
     }
 
-  public   Meal save(Meal meal, int userId) {
+    public Meal save(Meal meal, int userId) {
 
         return repository.save(meal, userId);
 
     }
 
 
-  public   boolean delete(int id, int userId) {
+    public boolean delete(int id, int userId) {
 
         return repository.delete(id, userId);
 
     }
 
 
-  public   Meal get(int id, int userId) {
+    public Meal get(int id, int userId) {
 
         ValidationUtil.checkNotFoundWithId(repository.get(id, userId), id);
 
@@ -46,7 +49,7 @@ public class MealService {
     }
 
 
-  public   List<Meal> getAll(int userId) {
+    public List<Meal> getAll(int userId) {
 
         return repository.getAll(userId);
 
@@ -54,11 +57,18 @@ public class MealService {
     }
 
 
-  public   void update(Meal meal, int userId) {
+    public void update(Meal meal, int userId) {
 
         ValidationUtil.checkNotFoundWithId(repository.save(meal, userId), meal.getId());
 
 
     }
+
+    public List<Meal> getBetweenHalfOpen(LocalDate start, LocalDate end, int userId) {
+
+        return repository.getBetweenHalfOpen(DateTimeUtil.getStart(start), DateTimeUtil.getEnd(end), userId);
+
+    }
+
 
 }
